@@ -1,56 +1,39 @@
 project "SDL2main"
 	kind          "StaticLib"
 	language      "C"
-
 	systemversion "latest"
+	vectorextensions "SSE" -- Necessary to run x32.
+	location "%{wks.location}/build/%{prj.name}"
 
-	flags {
-		          "NoRuntimeChecks",      -- Only used on Visual Studio.
-		          "NoBufferSecurityCheck"
+	-- Output directory
+	targetdir ("%{wks.location}/bin/" .. outputdir .. "/%{prj.name}")
+	objdir  ("%{wks.location}/obj/" .. outputdir .. "/%{prj.name}")
+
+	flags 
+	{
+		"NoRuntimeChecks", 
+		"NoBufferSecurityCheck"
 	}
 
-	vectorextensions "SSE"                -- Necessary to run x32.
+	includedirs "include"
 
-	location         "Intermediate/ProjectFiles/%{_ACTION}"
+	files
+	{
+		"src/main/windows/*.c"
+	}
 
-	targetdir        "Binaries/%{cfg.buildcfg}-%{cfg.system}-%{cfg.architecture}"
-	objdir           "Intermediate/%{cfg.buildcfg}-%{cfg.system}-%{cfg.architecture}/%{prj.name}"
-
-	includedirs     {"include"}
-
-	files           {"src/main/windows/*.c"}	
-
-	systemversion    "latest"
-	defines {
-					 "_WINDOWS",
-					 "WIN32"
+	defines 
+	{
+		"_WINDOWS", 
+		"WIN32"
 	}
 
 	filter "configurations:Debug"
-		defines {
-			         "_DEBUG"
-		}
-		runtime      "Debug"
-		symbols      "On"
-
+		defines "_DEBUG"
+		runtime "Debug"
+		symbols "On"
+	
 	filter "configurations:Release"
-		defines {
-			         "NDEBUG"
-		}
-		runtime      "Release"
-		optimize     "Speed"
-
-
-	filter "configurations:Development"    -- These are the configurations I tend to
-		defines {                          -- use in my projects, but I have added 
-			         "NDEBUG"              -- the default ones anyway.
-		}
-		runtime      "Release"
-		optimize     "On"
-
-	filter "configurations:Ship"
-		defines {
-			         "NDEBUG"
-		}
-		runtime      "Release"
-		optimize     "Speed"
+		defines "NDEBUG"
+		runtime "Release"
+		optimize "On"

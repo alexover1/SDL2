@@ -1,48 +1,24 @@
 project "SDL2"
-	filter "system:windows"               -- SDL needs to be a DLL on windows for
-		kind          "SharedLib"         -- some reason :)
-		staticruntime "off"
+	language "C++"
+	cppdialect "C++17"
+	vectorextensions "SSE"
 
-	filter "system:macosx"
-		kind          "StaticLib"
-		staticruntime "on"
-
-	filter "system:linux"
-		kind          "StaticLib"
-		staticruntime "on"
-	filter {}
-
-	language          "C++"              -- Some files are C++ files, although they
-	cppdialect        "C++17"            -- are not needed on normal Windows.
-                            
-	systemversion     "latest"
-
-	flags {
-		              "NoRuntimeChecks", -- Only used on Visual Studio.
-		              "NoBufferSecurityCheck"
+	flags 
+	{ 
+		"NoRuntimeChecks",
+		"NoBufferSecurityCheck"
 	}
 
-	vectorextensions  "SSE"               -- Necessary to run x32.
+	-- Output directory
+	location "%{wks.location}/build/%{prj.name}"
 
-	location          "Intermediate/ProjectFiles/%{_ACTION}"
-
-	targetdir         "Binaries/%{cfg.buildcfg}-%{cfg.system}-%{cfg.architecture}"
-	objdir            "Intermediate/%{cfg.buildcfg}-%{cfg.system}-%{cfg.architecture}/%{prj.name}"
-
+	targetdir         ("%{wks.location}/bin/" .. outputdir .. "/%{prj.name}")
+	objdir            ("%{wks.location}/obj/" .. outputdir .. "/%{prj.name}")
 	includedirs      {"include"}
 
-	filter "system:windows"
-		links {
-			         "setupapi",
-			         "winmm",
-			         "imm32",
-			         "version",
-		}
-	filter {}
-
-	files {
-		-- All platforms.
-		-- Header files.                                    -- C files.
+	-- Files
+	files 
+	{
 		"include/*.h",									    
 														    
 		"src/audio/disk/*.h",                               "src/atomic/*.c",
@@ -84,7 +60,8 @@ project "SDL2"
 	}
 
 	filter "system:windows"
-		files {
+		files 
+		{
 			-- Windows specific files.
 			-- Header files.                                -- C files.
 			"include/SDL_config_windows.h",				    
@@ -117,40 +94,30 @@ project "SDL2"
 		}
 
 		
-	inlining          "Explicit"             -- General optimisation options.
-	intrinsics        "Off"
+	inlining "Explicit"
+	intrinsics "Off"
 
 	filter "system:windows"
+		kind "SharedLib"
+		defines { "_WINDOWS" }
 		systemversion "latest"
-		defines {
-			          "_WINDOWS"
-		}
+		staticruntime "off"
+		links { "setupapi", "winmm", "imm32", "version" }
+
+	filter "system:macosx"
+		kind          "StaticLib"
+		staticruntime "on"
+
+	filter "system:linux"
+		kind          "StaticLib"
+		staticruntime "on"
 
 	filter "configurations:Debug"
-		defines {
-			          "_DEBUG"
-		}
-		runtime       "Debug"
-		symbols       "On"
+		defines { "_DEBUG" }
+		runtime "Debug"
+		symbols "On"
 
 	filter "configurations:Release"
-		defines {
-			          "NDEBUG"
-		}
-		runtime       "Release"
-		optimize      "Speed"
-
-
-	filter "configurations:Development"     -- These are the configurations I tend to
-		defines {                           -- use in my projects, but I have added 
-			          "NDEBUG"              -- the default ones anyway.
-		}
-		runtime       "Release"
-		optimize      "On"
-
-	filter "configurations:Ship"
-		defines {
-			          "NDEBUG"
-		}
-		runtime       "Release"
-		optimize      "Speed"
+		defines { "NDEBUG" }
+		runtime "Release"
+		optimize "Speed"
